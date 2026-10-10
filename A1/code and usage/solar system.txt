@@ -1,0 +1,120 @@
+from processing import *
+#               ospeed   dis   rospeed  size       color     ring
+planet_data = [
+    [0.0120, 55, 0.005, 3, 180, 180, 180, False],  # Mercury
+    [0.0085, 80, -0.002, 6, 220, 190, 130, False],  # Venus
+    [0.0070, 110, 0.040, 7, 80, 160, 255, False],  # Earth
+    [0.0055, 135, 0.038, 4, 230, 100, 60, False],  # Mars
+    [0.0030, 175, 0.090, 16, 220, 170, 120, False],  # Jupiter
+    [0.0022, 215, 0.003, 13, 230, 210, 150, True],  # Saturn
+    [0.0015, 255, -0.060, 9, 120, 220, 230, False],  # Uranus
+    [0.0010, 290, 0.070, 8, 60, 100, 230, False],  # Neptune
+]
+planet_count=8
+
+def setup():
+    size(900, 600, P3D)
+
+
+def center(sp):
+    rotateY(frameCount * sp)
+
+    noStroke()
+    sphere(0)
+
+
+def planet(dis, sp, size, r, g, b, sun, ring=False):  # planet 1
+    translate(dis + size + sun, 0, 0)
+    rotateY(frameCount * sp)
+
+    emissive(0)
+
+    fill(r, g, b)
+    noStroke()
+    sphere(size)
+    if ring == True:
+        rotateX(radians(63.3))
+        noFill()  # ไม่ใส่สี
+        stroke(219, 181, 124)  # สีเส้นขอบ
+        for i in range(25):
+            ellipse(0, 0, size * (3 + i * 0.05), size * (3 + i * 0.05))
+
+
+def orbit_line(d):
+    pushMatrix()
+    rotateX(radians(90))
+    noFill()
+    stroke(255, 255, 255, 100)
+    ellipse(0, 0, d * 2, d * 2)
+    popMatrix()
+
+
+def button():
+    hint(DISABLE_DEPTH_TEST)  # ไม่ต้องคำนวณพิกัด Z
+
+    stroke(255)
+    fill(255, 0, 0)
+    rect(30, 30, 50, 50)
+    fill(0, 255, 0)
+    rect(90, 30, 50, 50)
+
+    hint(ENABLE_DEPTH_TEST)  # กลับมาคิดคำนวณพิกัด Z
+
+
+def mousePressed():
+    global planet_count
+    if 30 <= mouseX <= 80 and 30 <= mouseY <= 80:
+        if planet_count > 0:
+            planet_count -= 1
+    if 90 <= mouseX <= 140 and 30 <= mouseY <= 80:
+        if planet_count < len(planet_data):
+            planet_count += 1
+
+
+def draw():  # main control----------------------------------------
+    background(30)  # SUN
+    button()
+    pushMatrix()
+
+    translate(width / 2, height / 2, 0)
+    pointLight(255, 255, 255, 0, 0, 0)  # จุดที่แสงออก
+    ambientLight(100, 100, 100)  # บรรยากาศแสง
+    directionalLight(
+        120, 120, 120, -1, 1, -1
+    )  # แสงที่ฉายไปที่ตามตำแหน่ง 3 ตัวหลัง
+
+    rotateZ(radians(20))
+    rotateX(radians(-15))
+    rotateY(frameCount * 0.01)  # หมุนตามเข็ม
+
+    sunsize = 40
+
+    emissive(255, 100, 40)  # แสงจากวัตถุ
+    fill(255, 95, 31)
+    noStroke()
+    sphere(sunsize)
+
+    for i in range(planet_count):
+        p = planet_data[i]
+        pushMatrix()
+
+        orbit_speed, distance, speed, size, r, g, b, ring = p
+        orbit_line(distance + sunsize + size)  # orbit line
+        center(orbit_speed)  # orbit speed
+        planet(
+            distance, speed, size, r, g, b, sunsize, ring
+        )  # (distance ,speed ,size ,r,g,b, sun_size)
+
+        popMatrix()
+    popMatrix()
+
+
+run()
+#{} = ช่องสำหรับใส่ 
+#rotate{X,Y,Z}() =ให้หมุนตามแนวแกน x,y,z
+#- frameCount = สั่งให้หมุนตามเข็ม หากทวนเข็บใส่ - ข้างหน้าฟังก์ชันหากต้องการให้หมุนช้า * เข้าไป 0.01
+#- radians(23) =เอียงตามองศา start ตามเข็มนาฬิกา
+#pushMatrix() ก็ต้องมี popMatrix() เพื่อจำกัดฟังก์ชันให้ทำงานเฉพาะรูปทรงนี้
+#box(50) วาดทรงสี่เหลี่ยมจตุรัส นับจาก center ข้างละ 25 xyz
+#ต้องใส่การหมุนตำแหน่งบลาๆ ตามด้วยสีเส้น และสร้างรูปทรงตามลำดับ
+#emissive(r,g,b) ให้วัตถุเรืองแสง

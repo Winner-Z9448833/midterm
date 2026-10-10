@@ -1,0 +1,2 @@
+1) GOTO ---> https://trinket.strivemath.org/python/34e980e8b135 <---
+2) Copy & paste code from  (solar_system.txt)
