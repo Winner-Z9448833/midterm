@@ -1,0 +1,122 @@
+// A1-java-mode: 3D Solar System Simulation (Java Mode)
+// แปลงจากโค้ด Python-mode ของคุณ
+
+// เก็บข้อมูลดาว: [ospeed, dis, rospeed, size, r, g, b, ring (0 หรือ 1 แทน False/True)]
+float[][] planet_data = {
+  {0.0120f, 55, 0.005f, 3, 180, 180, 180, 0},   // Mercury
+  {0.0085f, 80, -0.002f, 6, 220, 190, 130, 0},  // Venus
+  {0.0070f, 110, 0.040f, 7, 80, 160, 255, 0},   // Earth
+  {0.0055f, 135, 0.038f, 4, 230, 100, 60, 0},   // Mars
+  {0.0030f, 175, 0.090f, 16, 220, 170, 120, 0}, // Jupiter
+  {0.0022f, 215, 0.003f, 13, 230, 210, 150, 1}, // Saturn
+  {0.0015f, 255, -0.060f, 9, 120, 220, 230, 0}, // Uranus
+  {0.0010f, 290, 0.070f, 8, 60, 100, 230, 0}    // Neptune
+};
+
+int planet_count = 8;
+
+void setup() {
+  size(900, 600, P3D);
+}
+
+void center(float sp) {
+  rotateY(frameCount * sp);
+  noStroke();
+  sphere(0);
+}
+
+void planet(float dis, float sp, float size, float r, float g, float b, float sun, boolean ring) {
+  translate(dis + size + sun, 0, 0);
+  rotateY(frameCount * sp);
+
+  emissive(0, 0, 0);
+  fill(r, g, b);
+  noStroke();
+  sphere(size);
+  
+  if (ring) {
+    rotateX(radians(63.3f));
+    noFill();
+    stroke(219, 181, 124);
+    for (int i = 0; i < 25; i++) {
+      ellipse(0, 0, size * (3 + i * 0.05f), size * (3 + i * 0.05f));
+    }
+  }
+}
+
+void orbit_line(float d) {
+  pushMatrix();
+  rotateX(radians(90));
+  noFill();
+  stroke(255, 255, 255, 100);
+  ellipse(0, 0, d * 2, d * 2);
+  popMatrix();
+}
+
+void button() {
+  hint(DISABLE_DEPTH_TEST); // ไม่ต้องคำนวณพิกัด Z สำหรับ UI
+
+  stroke(255);
+  fill(255, 0, 0);
+  rect(30, 30, 50, 50);
+  fill(0, 255, 0);
+  rect(90, 30, 50, 50);
+
+  hint(ENABLE_DEPTH_TEST); // กลับมาคิดคำนวณพิกัด Z
+}
+
+void mousePressed() {
+  if (mouseX >= 30 && mouseX <= 80 && mouseY >= 30 && mouseY <= 80) {
+    if (planet_count > 0) {
+      planet_count -= 1;
+    }
+  }
+  if (mouseX >= 90 && mouseX <= 140 && mouseY >= 30 && mouseY <= 80) {
+    if (planet_count < planet_data.length) {
+      planet_count += 1;
+    }
+  }
+}
+
+void draw() {
+  background(30);
+  button();
+  pushMatrix();
+
+  translate(width / 2, height / 2, 0);
+  pointLight(255, 255, 255, 0, 0, 0);
+  ambientLight(100, 100, 100);
+  directionalLight(120, 120, 120, -1, 1, -1);
+
+  rotateZ(radians(20));
+  rotateX(radians(-15));
+  rotateY(frameCount * 0.01f);
+
+  float sunsize = 40;
+
+  emissive(255, 100, 40);
+  fill(255, 95, 31);
+  noStroke();
+  sphere(sunsize);
+
+  for (int i = 0; i < planet_count; i++) {
+    float[] p = planet_data[i];
+    pushMatrix();
+
+    float orbit_speed = p[0];
+    float distance = p[1];
+    float speed = p[2];
+    float size = p[3];
+    float r = p[4];
+    float g = p[5];
+    float b = p[6];
+    boolean ring = (p[7] == 1.0f);
+
+    orbit_line(distance + sunsize + size);
+    center(orbit_speed);
+    planet(distance, speed, size, r, g, b, sunsize, ring);
+
+    popMatrix();
+  }
+  popMatrix();
+}
