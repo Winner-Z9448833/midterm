@@ -1,7 +1,3 @@
-import os
-
-# ดูว่าตอนนี้โปรแกรมรันอยู่ที่โฟลเดอร์ไหน
-print("Current Directory:", os.getcwd())
 class Table:
   def __init__(self, m):
     self.m = m
